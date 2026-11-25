@@ -2,87 +2,226 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#121212">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0c">
 <title>YT Music Jam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  *{box-sizing:border-box}
-  body{margin:0;background:#121212;color:#fff;font:15px/1.4 Roboto,system-ui,sans-serif}
-  .wrap{max-width:560px;margin:0 auto;padding:18px}
-  h1{font-size:22px;margin:8px 0 4px}
-  .sub{color:#aaa;margin-bottom:18px}
-  input{width:100%;padding:12px;border-radius:10px;border:1px solid #333;background:#1e1e1e;color:#fff;font-size:16px}
-  .btn{display:block;width:100%;margin-top:10px;padding:13px;border:0;border-radius:24px;background:#ff0033;color:#fff;
-       font-weight:600;font-size:16px;text-align:center;text-decoration:none;cursor:pointer}
-  .btn.g{background:#2e2e2e}
-  .small{color:#888;font-size:12px;margin-top:6px}
-  .player{position:relative;padding-top:56.25%;border-radius:12px;overflow:hidden;background:#000}
-  .player iframe,.player #player{position:absolute;inset:0;width:100%;height:100%}
-  .controls{display:flex;gap:8px;margin-top:10px}
-  .controls .btn{margin:0;font-size:14px;padding:11px}
-  .status{color:#aaa;font-size:13px;margin:10px 0}
-  .warn{color:#ffb4b4}
-  .add{display:flex;gap:8px;margin-top:14px}
-  .add .btn{width:auto;margin:0;padding:0 18px}
-  h2{font-size:16px;margin:18px 0 6px}
-  ol{padding-left:22px;margin:0}
-  li{margin:8px 0}
-  li .a{color:#aaa;font-size:12px}
-  li button{float:right;background:none;border:0;color:#888;font-size:16px;cursor:pointer}
+  :root{
+    --bg:#0a0a0c; --card:rgba(255,255,255,.055); --card2:rgba(255,255,255,.09);
+    --line:rgba(255,255,255,.08); --text:#f5f5f7; --muted:#9b9ba6; --accent:#ff3358; --accent2:#ff7a45;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;min-height:100%}
+  body{background:var(--bg);color:var(--text);font:15px/1.45 'Plus Jakarta Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
   [hidden]{display:none!important}
+
+  /* Ambient background from the current song's artwork */
+  .bg{position:fixed;inset:-25%;background:radial-gradient(circle at 30% 20%,#ff335833,transparent 55%),radial-gradient(circle at 80% 60%,#ff7a4522,transparent 50%);
+      background-size:cover;background-position:center;filter:blur(80px) saturate(1.5);opacity:.55;z-index:-2;transition:opacity .8s}
+  .shade{position:fixed;inset:0;background:linear-gradient(180deg,rgba(10,10,12,.15) 0%,rgba(10,10,12,.75) 55%,var(--bg) 100%);z-index:-1}
+
+  .wrap{max-width:480px;margin:0 auto;padding:calc(18px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom))}
+
+  /* Landing / invite */
+  .hero{min-height:88vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px}
+  .logo{width:96px;height:96px;border-radius:30px;display:grid;place-items:center;margin-bottom:18px;
+        background:linear-gradient(140deg,var(--accent),var(--accent2));box-shadow:0 20px 60px -10px #ff335888}
+  .logo svg{width:46px;height:46px}
+  .eyebrow{color:var(--muted);font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+  h1{font-size:34px;line-height:1.1;margin:6px 0 4px;font-weight:800;letter-spacing:-.02em}
+  .lead{color:var(--muted);max-width:300px;margin:0 auto 26px}
+  .cta{width:100%;max-width:320px;padding:17px;border-radius:999px;background:#fff;color:#0a0a0c;font-weight:700;font-size:16px;
+       box-shadow:0 12px 40px -12px #fff6;transition:transform .15s}
+  .cta:active{transform:scale(.97)}
+  .ghost{margin-top:12px;color:var(--muted);font-size:14px;text-decoration:none;padding:8px}
+  .you{margin-top:22px;color:var(--muted);font-size:13px}
+  .you b{color:var(--text);font-weight:600}
+
+  /* Jam screen */
+  .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .live{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;padding:7px 12px;border-radius:999px;background:var(--card);border:1px solid var(--line)}
+  .dot{width:8px;height:8px;border-radius:50%;background:#2ee66b;box-shadow:0 0 0 0 #2ee66b88;animation:pulse 2s infinite}
+  .dot.off{background:#ffb020;animation:none}
+  @keyframes pulse{70%{box-shadow:0 0 0 8px #2ee66b00}100%{box-shadow:0 0 0 0 #2ee66b00}}
+  .icon-btn{display:flex;align-items:center;gap:6px;font-weight:600;font-size:13px;padding:8px 14px;border-radius:999px;background:var(--card2);border:1px solid var(--line)}
+  .icon-btn svg{width:16px;height:16px}
+
+  .art{position:relative;width:100%;aspect-ratio:16/10;min-height:200px;border-radius:22px;overflow:hidden;background:#000;
+       box-shadow:0 30px 70px -20px #000c,0 0 0 1px var(--line)}
+  .art iframe,.art #player{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .art .empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--muted);padding:24px;
+              background:linear-gradient(140deg,#1b1b22,#121217)}
+
+  .meta{margin:20px 2px 14px}
+  .song{font-size:22px;font-weight:700;letter-spacing:-.01em;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .artist{color:var(--muted);margin-top:3px;font-weight:500}
+
+  .bar{position:relative;height:22px;display:flex;align-items:center;cursor:pointer;touch-action:none}
+  .track{width:100%;height:5px;border-radius:5px;background:rgba(255,255,255,.14);overflow:hidden}
+  .fill{height:100%;width:0;background:#fff;border-radius:5px}
+  .times{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;margin-top:2px}
+
+  .controls{display:flex;align-items:center;justify-content:center;gap:26px;margin:14px 0 26px}
+  .play{width:74px;height:74px;border-radius:50%;background:#fff;color:#0a0a0c;display:grid;place-items:center;
+        box-shadow:0 14px 40px -10px #fff5;transition:transform .15s}
+  .play:active,.round:active{transform:scale(.92)}
+  .play svg{width:30px;height:30px}
+  .round{width:52px;height:52px;border-radius:50%;background:var(--card2);border:1px solid var(--line);display:grid;place-items:center;transition:transform .15s}
+  .round svg{width:22px;height:22px}
+
+  .section{margin-top:22px}
+  .label{display:flex;justify-content:space-between;align-items:baseline;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:0 2px 10px}
+
+  .people{display:flex;flex-wrap:wrap;gap:8px}
+  .person{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:13px;font-weight:600}
+  .av{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#0a0a0c}
+  .person .me{color:var(--muted);font-weight:500}
+
+  .add{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 16px;border-radius:999px;background:var(--card);border:1px solid var(--line)}
+  .add input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--text);font:inherit;font-size:16px;padding:8px 0}
+  .add input::placeholder{color:#6f6f79}
+  .add button{width:40px;height:40px;border-radius:50%;background:linear-gradient(140deg,var(--accent),var(--accent2));display:grid;place-items:center;flex:none}
+  .add button svg{width:18px;height:18px}
+
+  .queue{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:4px}
+  .queue li{display:flex;align-items:center;gap:12px;padding:8px;border-radius:14px;transition:background .2s}
+  .queue li:hover{background:var(--card)}
+  .thumb{width:48px;height:48px;border-radius:10px;object-fit:cover;flex:none;background:#222}
+  .qi{flex:1;min-width:0}
+  .qt{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .qa{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .x{width:32px;height:32px;border-radius:50%;color:var(--muted);display:grid;place-items:center;flex:none}
+  .x:hover{background:var(--card2);color:var(--text)}
+  .x svg{width:14px;height:14px}
+  .hint{color:var(--muted);font-size:13px;text-align:center;padding:18px 10px;border:1px dashed var(--line);border-radius:14px;margin-top:12px}
+
+  .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;
+         background:#fff;color:#0a0a0c;font-weight:600;font-size:14px;padding:11px 18px;border-radius:999px;
+         box-shadow:0 10px 40px #0008;transition:all .25s;pointer-events:none;max-width:90vw;text-align:center}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <!-- Join screen -->
-  <div id="joinView">
-    <h1>🎧 YT Music Jam</h1>
-    <div class="sub">Listen together, in sync.</div>
-    <input id="room" placeholder="Room name">
-    <div style="height:10px"></div>
-    <input id="name" placeholder="Your name">
-    <button class="btn" id="go">Join &amp; listen here</button>
-    <a class="btn g" id="ytm" target="_blank">Open in YouTube Music (desktop extension)</a>
-    <div class="small">On a computer with the YT Music Jam extension, use the second button for the full YouTube Music experience.</div>
-  </div>
+<div class="bg" id="bg"></div><div class="shade"></div>
 
-  <!-- Jam screen -->
-  <div id="jamView" hidden>
-    <div class="player"><div id="player"></div></div>
-    <div class="status" id="status">Connecting…</div>
+<div class="wrap">
+  <!-- Landing (no room in link) -->
+  <section class="hero" id="landing" hidden>
+    <div class="logo"><svg viewBox="0 0 24 24" fill="#fff"><path d="M9 18.5a2.5 2.5 0 1 1-2-2.45V6.6a1 1 0 0 1 .76-.97l10-2.5A1 1 0 0 1 19 4.1v11.4a2.5 2.5 0 1 1-2-2.45V7.3l-8 2v9.2Z"/></svg></div>
+    <div class="eyebrow">YT Music Jam</div>
+    <h1>Listen together.</h1>
+    <p class="lead">Same song, same second, wherever you are. Start a jam and send the link.</p>
+    <button class="cta" id="startBtn">Start a jam</button>
+    <div class="you">You’ll appear as <b class="myName"></b></div>
+  </section>
+
+  <!-- Invite (room in link) -->
+  <section class="hero" id="invite" hidden>
+    <div class="logo"><svg viewBox="0 0 24 24" fill="#fff"><path d="M9 18.5a2.5 2.5 0 1 1-2-2.45V6.6a1 1 0 0 1 .76-.97l10-2.5A1 1 0 0 1 19 4.1v11.4a2.5 2.5 0 1 1-2-2.45V7.3l-8 2v9.2Z"/></svg></div>
+    <div class="eyebrow">You’re invited</div>
+    <h1>Join the jam</h1>
+    <p class="lead">Music plays here in sync with everyone else.</p>
+    <button class="cta" id="joinBtn">Tap to join</button>
+    <a class="ghost" id="ytmLink" target="_blank">On a computer with the extension? Open in YouTube Music →</a>
+    <div class="you">You’ll appear as <b class="myName"></b></div>
+  </section>
+
+  <!-- Jam -->
+  <section id="jam" hidden>
+    <div class="top">
+      <div class="live"><span class="dot" id="dot"></span><span id="liveText">Connecting…</span></div>
+      <button class="icon-btn" id="inviteBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 6l-4-4-4 4M12 2v13M20 14v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5"/></svg>
+        Invite
+      </button>
+    </div>
+
+    <div class="art">
+      <div id="player"></div>
+      <div class="empty" id="emptyArt">Add a song below to get the jam started 🎶</div>
+    </div>
+
+    <div class="meta">
+      <div class="song" id="song">Nothing playing yet</div>
+      <div class="artist" id="artist">&nbsp;</div>
+    </div>
+
+    <div class="bar" id="bar"><div class="track"><div class="fill" id="fill"></div></div></div>
+    <div class="times"><span id="cur">0:00</span><span id="dur">0:00</span></div>
+
     <div class="controls">
-      <button class="btn" id="pp">⏯ Play / Pause</button>
-      <button class="btn g" id="skip">⏭ Next</button>
-      <button class="btn g" id="invite">🔗 Invite</button>
+      <button class="play" id="pp" aria-label="Play or pause"></button>
+      <button class="round" id="skip" aria-label="Next song">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 5.6v12.8a1 1 0 0 0 1.5.86L16 13.5V18a1 1 0 0 0 2 0V6a1 1 0 0 0-2 0v4.5L6.5 4.74A1 1 0 0 0 5 5.6Z"/></svg>
+      </button>
     </div>
+
     <div class="add">
-      <input id="link" placeholder="Paste a YouTube / YT Music link">
-      <button class="btn" id="addBtn">Add</button>
+      <input id="link" placeholder="Paste a YouTube or YT Music link" inputmode="url" autocomplete="off">
+      <button id="addBtn" aria-label="Add to queue"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
     </div>
-    <h2>Up next</h2>
-    <ol id="queue"></ol>
-    <div class="small" id="empty">Queue is empty. Paste a song link to add one.</div>
-    <h2>Listening</h2>
-    <div id="members" class="small"></div>
-  </div>
+
+    <div class="section">
+      <div class="label"><span>Up next</span><span id="qCount"></span></div>
+      <ul class="queue" id="queue"></ul>
+      <div class="hint" id="qEmpty">Queue is empty. Paste a link above to add a song.</div>
+    </div>
+
+    <div class="section">
+      <div class="label"><span>Listening</span></div>
+      <div class="people" id="people"></div>
+    </div>
+  </section>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script>
 const DRIFT_LIMIT = 1.5, HEARTBEAT_MS = 5000;
 const $ = (id) => document.getElementById(id);
-const roomFromPath = decodeURIComponent((location.pathname.match(/^\/r\/([^/]+)/) || [])[1] || '');
-$('room').value = roomFromPath;
-$('name').value = localStorage.getItem('jamName') || '';
-const ytmLink = () => `https://music.youtube.com/?jam=${encodeURIComponent($('room').value.trim())}`;
-$('ytm').href = ytmLink();
-$('room').oninput = () => { $('ytm').href = ytmLink(); };
+const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l11-6.86a1 1 0 0 0 0-1.7l-11-6.86A1 1 0 0 0 8 5.14Z"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4.5" width="4" height="15" rx="1.3"/><rect x="14" y="4.5" width="4" height="15" rx="1.3"/></svg>';
+const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
 
+// ---------- Names & rooms (no forms) ----------
+const ADJ = ['Cosmic','Sunny','Velvet','Neon','Lazy','Lucky','Midnight','Golden','Electric','Mellow','Silver','Wild','Cozy','Indigo','Lunar','Mango'];
+const NOUN = ['Otter','Panda','Falcon','Comet','Koala','Tiger','Lotus','Raven','Fox','Dolphin','Cactus','Penguin','Lynx','Maple','Orca','Sparrow'];
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
+const name = localStorage.getItem('jamName') || `${pick(ADJ)} ${pick(NOUN)}`;
+localStorage.setItem('jamName', name);
+document.querySelectorAll('.myName').forEach((el) => (el.textContent = name));
+
+let room = decodeURIComponent((location.pathname.match(/^\/+r\/([^/]+)/) || [])[1] || '');
+if (room) {
+  $('invite').hidden = false;
+  $('ytmLink').href = `https://music.youtube.com/?jam=${encodeURIComponent(room)}`;
+} else {
+  $('landing').hidden = false;
+}
+
+$('startBtn').onclick = () => {
+  room = `${pick(ADJ)}-${pick(NOUN)}-${Math.floor(10 + Math.random() * 90)}`.toLowerCase();
+  history.replaceState(null, '', '/r/' + room);
+  start();
+};
+$('joinBtn').onclick = start;
+
+function start() {
+  $('landing').hidden = $('invite').hidden = true;
+  $('jam').hidden = false;
+  createPlayer(); // created from a tap, so phones allow playback
+  connect();
+}
+
+// ---------- Player ----------
 let ws, player, playerReady = false, ytApiReady = false;
-let room = '', name = '';
-let session = { isHost: false }, queue = [], members = [];
-let applying = false, pending = null, lastT = 0, beat = 0, nextRequestedFor = null;
+let isHost = false, queue = [], members = [];
+let applying = false, pending = null, lastT = 0, beat = 0, nextRequestedFor = null, dragging = false;
 
-// ---------- YouTube player ----------
 window.onYouTubeIframeAPIReady = () => { ytApiReady = true; };
 const s = document.createElement('script');
 s.src = 'https://www.youtube.com/iframe_api';
@@ -91,39 +230,41 @@ document.head.appendChild(s);
 function createPlayer() {
   if (!ytApiReady) return setTimeout(createPlayer, 200);
   player = new YT.Player('player', {
-    playerVars: { playsinline: 1, rel: 0 },
+    playerVars: { playsinline: 1, rel: 0, modestbranding: 1 },
     events: {
       onReady: () => { playerReady = true; if (pending) { const p = pending; pending = null; apply(p); } },
       onStateChange,
-      onError: () => setStatus('This song can’t play outside YouTube (blocked by the label). Skip or add another.', true),
+      onError: () => toast('This song can’t play outside YouTube. Skipping is your friend ⏭'),
     },
   });
 }
 
 const curId = () => (playerReady && player.getVideoData ? player.getVideoData().video_id : null);
 const isPlaying = () => playerReady && player.getPlayerState() === YT.PlayerState.PLAYING;
+const send = (m) => ws && ws.readyState === 1 && ws.send(JSON.stringify(m));
 
 function onStateChange(e) {
+  updateNowPlaying();
   if (applying) return;
   if (e.data === YT.PlayerState.PLAYING || e.data === YT.PlayerState.PAUSED) push();
-  if (e.data === YT.PlayerState.ENDED && session.isHost && queue.length) requestNext(curId());
+  if (e.data === YT.PlayerState.ENDED && isHost && queue.length) requestNext(curId());
 }
 
 function push() {
   const id = curId();
-  if (!id || !ws || ws.readyState !== 1) return;
-  ws.send(JSON.stringify({ type: 'state', videoId: id, position: player.getCurrentTime(), playing: isPlaying() }));
+  if (!id) return;
+  send({ type: 'state', videoId: id, position: player.getCurrentTime(), playing: isPlaying() });
 }
 
 function requestNext(fromId) {
-  if (nextRequestedFor === fromId) return;
+  if (nextRequestedFor === fromId && fromId) return;
   nextRequestedFor = fromId;
-  ws.send(JSON.stringify({ type: 'queue_next', fromVideoId: fromId }));
+  send({ type: 'queue_next', fromVideoId: fromId });
 }
 
 function apply(st) {
   if (!st || !st.videoId) return;
-  if (!playerReady) { pending = { ...st, elapsed: st.elapsed || 0, receivedAt: Date.now() }; return; }
+  if (!playerReady) { pending = { ...st, receivedAt: st.receivedAt || Date.now() }; return; }
   const age = (st.elapsed || 0) + (st.receivedAt ? Date.now() - st.receivedAt : 0);
   const expected = st.position + (st.playing ? age / 1000 : 0);
   applying = true;
@@ -138,92 +279,158 @@ function apply(st) {
   setTimeout(() => { applying = false; lastT = player.getCurrentTime(); }, 1500);
 }
 
+// Sync loop: detect seeks made in the embedded player, host heartbeat, auto-advance queue
 setInterval(() => {
   if (!playerReady || !ws || ws.readyState !== 1) return;
   const t = player.getCurrentTime(), id = curId();
-  // Detect manual seeks from the embedded player's own controls
   if (!applying && isPlaying() && Math.abs(t - (lastT + 1)) > 2.5) push();
   lastT = t;
-  if (session.isHost && isPlaying()) {
+  if (isHost && isPlaying()) {
     const d = player.getDuration();
     if (queue.length && d && d - t < 1.5) requestNext(id);
-    beat += 1000;
-    if (beat >= HEARTBEAT_MS) { beat = 0; push(); }
+    if ((beat += 1000) >= HEARTBEAT_MS) { beat = 0; push(); }
   }
 }, 1000);
 
 // ---------- Connection ----------
 function connect() {
   ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host);
-  ws.onopen = () => { ws.send(JSON.stringify({ type: 'join', room, name })); setStatus('Connected'); };
+  ws.onopen = () => { send({ type: 'join', room, name }); setLive(true); };
   ws.onmessage = (e) => {
     const m = JSON.parse(e.data);
     switch (m.type) {
       case 'welcome':
-        session.isHost = m.isHost; queue = m.queue || []; render();
+        isHost = m.isHost; queue = m.queue || []; renderQueue();
         if (m.state) apply({ ...m.state, receivedAt: Date.now() });
-        else setStatus(m.isHost ? 'You’re the host. Paste a song link to start!' : 'Waiting for the host to play something…');
         break;
-      case 'state': apply({ ...m.state, receivedAt: Date.now() }); setStatus(`Synced · last change by ${m.state.by}`); break;
-      case 'queue': queue = m.queue; render(); break;
-      case 'members': members = m.members; render(); break;
-      case 'host': session.isHost = true; render(); break;
+      case 'state': apply({ ...m.state, receivedAt: Date.now() }); break;
+      case 'queue': queue = m.queue; renderQueue(); break;
+      case 'members': members = m.members; renderPeople(); setLive(true); break;
+      case 'host': isHost = true; renderPeople(); break;
     }
   };
-  ws.onclose = () => { setStatus('Reconnecting…', true); setTimeout(connect, 3000); };
+  ws.onclose = () => { setLive(false); setTimeout(connect, 3000); };
 }
-setInterval(() => ws && ws.readyState === 1 && ws.send('{"type":"ping"}'), 20000);
+setInterval(() => send({ type: 'ping' }), 20000);
 
 // ---------- UI ----------
-function setStatus(text, warn) { $('status').textContent = text; $('status').className = 'status' + (warn ? ' warn' : ''); }
-
-function render() {
-  $('members').textContent = members.map((m) => (m.host ? '👑 ' : '') + m.name).join(', ');
-  const ol = $('queue');
-  ol.textContent = '';
-  for (const q of queue) {
-    const li = document.createElement('li');
-    const x = document.createElement('button');
-    x.textContent = '✕';
-    x.onclick = () => ws.send(JSON.stringify({ type: 'queue_remove', id: q.id }));
-    const t = document.createElement('div'); t.textContent = q.title || 'Loading…';
-    const a = document.createElement('div'); a.className = 'a';
-    a.textContent = [q.artist, `added by ${q.by}`].filter(Boolean).join(' · ');
-    li.append(x, t, a);
-    ol.appendChild(li);
-  }
-  $('empty').hidden = queue.length > 0;
+function setLive(on) {
+  $('dot').classList.toggle('off', !on);
+  $('liveText').textContent = on
+    ? (members.length > 1 ? `Live · ${members.length} listening` : 'Live · waiting for friends')
+    : 'Reconnecting…';
 }
 
-$('go').onclick = () => {
-  room = $('room').value.trim();
-  name = $('name').value.trim() || 'Guest';
-  if (!room) return $('room').focus();
-  localStorage.setItem('jamName', name);
-  history.replaceState(null, '', '/r/' + encodeURIComponent(room));
-  $('joinView').hidden = true;
-  $('jamView').hidden = false;
-  createPlayer(); // created from a tap so phones allow playback
-  connect();
-};
+const thumb = (id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+let shownId = null;
+function updateNowPlaying() {
+  const id = curId();
+  if (!id) return;
+  $('emptyArt').hidden = true;
+  const d = player.getVideoData();
+  $('song').textContent = d.title || 'Loading…';
+  $('artist').textContent = (d.author || '').replace(/ - Topic$/, '') || ' ';
+  if (id !== shownId) {
+    shownId = id;
+    $('bg').style.backgroundImage = `url(${thumb(id)})`;
+    document.title = `${d.title || 'Jam'} · YT Music Jam`;
+  }
+}
 
-const parseId = (s) => (s.match(/(?:[?&]v=|youtu\.be\/)([\w-]{11})/) || [])[1];
+const fmt = (t) => { t = Math.max(0, Math.floor(t || 0)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`; };
+setInterval(() => {
+  if (!playerReady) return;
+  const t = player.getCurrentTime(), d = player.getDuration();
+  if (!dragging) $('fill').style.width = d ? `${Math.min(100, (t / d) * 100)}%` : '0';
+  $('cur').textContent = fmt(t);
+  $('dur').textContent = fmt(d);
+  $('pp').innerHTML = isPlaying() ? ICON_PAUSE : ICON_PLAY;
+  if (curId() && $('song').textContent === 'Nothing playing yet') updateNowPlaying();
+}, 300);
+$('pp').innerHTML = ICON_PLAY;
+
+// Tap / drag the progress bar to seek
+function seekFromEvent(e) {
+  const r = $('bar').getBoundingClientRect();
+  const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+  const frac = Math.min(1, Math.max(0, x / r.width));
+  $('fill').style.width = `${frac * 100}%`;
+  return frac;
+}
+let seekFrac = 0;
+$('bar').addEventListener('pointerdown', (e) => { if (!curId()) return; dragging = true; seekFrac = seekFromEvent(e); $('bar').setPointerCapture(e.pointerId); });
+$('bar').addEventListener('pointermove', (e) => { if (dragging) seekFrac = seekFromEvent(e); });
+$('bar').addEventListener('pointerup', () => {
+  if (!dragging) return;
+  dragging = false;
+  player.seekTo(seekFrac * player.getDuration(), true);
+  setTimeout(push, 300);
+});
+
+const colorFor = (n) => { let h = 0; for (const c of n) h = (h * 31 + c.charCodeAt(0)) % 360; return `hsl(${h} 85% 70%)`; };
+function renderPeople() {
+  const box = $('people');
+  box.textContent = '';
+  for (const m of members) {
+    const p = document.createElement('div'); p.className = 'person';
+    const av = document.createElement('div'); av.className = 'av';
+    av.style.background = colorFor(m.name);
+    av.textContent = m.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+    const n = document.createElement('span');
+    n.textContent = (m.host ? '👑 ' : '') + m.name;
+    p.append(av, n);
+    if (m.name === name) { const me = document.createElement('span'); me.className = 'me'; me.textContent = '(you)'; p.append(me); }
+    box.appendChild(p);
+  }
+}
+
+function renderQueue() {
+  const ul = $('queue');
+  ul.textContent = '';
+  for (const q of queue) {
+    const li = document.createElement('li');
+    const img = document.createElement('img'); img.className = 'thumb'; img.src = thumb(q.videoId); img.alt = ''; img.onerror = () => { img.style.visibility = 'hidden'; };
+    const info = document.createElement('div'); info.className = 'qi';
+    const t = document.createElement('div'); t.className = 'qt'; t.textContent = q.title || 'Loading…';
+    const a = document.createElement('div'); a.className = 'qa';
+    a.textContent = [q.artist, `added by ${q.by}`].filter(Boolean).join(' · ');
+    info.append(t, a);
+    const x = document.createElement('button'); x.className = 'x'; x.innerHTML = ICON_X; x.setAttribute('aria-label', 'Remove');
+    x.onclick = () => send({ type: 'queue_remove', id: q.id });
+    li.append(img, info, x);
+    ul.appendChild(li);
+  }
+  $('qEmpty').hidden = queue.length > 0;
+  $('qCount').textContent = queue.length ? `${queue.length} song${queue.length > 1 ? 's' : ''}` : '';
+}
+
+let toastTimer;
+function toast(text) {
+  $('toast').textContent = text;
+  $('toast').classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => $('toast').classList.remove('show'), 2800);
+}
+
+// ---------- Actions ----------
+const parseId = (s) => (s.match(/(?:[?&]v=|youtu\.be\/|\/shorts\/)([\w-]{11})/) || [])[1];
 function addLink() {
   const id = parseId($('link').value);
-  if (!id) return setStatus('That doesn’t look like a YouTube link', true);
-  ws.send(JSON.stringify({ type: 'queue_add', videoId: id }));
+  if (!id) return toast('That doesn’t look like a YouTube link');
+  send({ type: 'queue_add', videoId: id });
   $('link').value = '';
-  // Nothing playing yet? Start the queue right away
-  if (!curId()) setTimeout(() => queue.length && requestNext(null), 300);
+  $('link').blur();
+  toast('Added to the queue');
+  if (!curId()) setTimeout(() => queue.length && requestNext(null), 400); // nothing playing: start now
 }
 $('addBtn').onclick = addLink;
 $('link').onkeydown = (e) => { if (e.key === 'Enter') addLink(); };
-$('pp').onclick = () => { if (!playerReady) return; isPlaying() ? player.pauseVideo() : player.playVideo(); };
-$('skip').onclick = () => { if (queue.length) { nextRequestedFor = null; requestNext(curId()); } else setStatus('Nothing in the queue', true); };
-$('invite').onclick = async () => {
+$('pp').onclick = () => { if (!curId()) return toast('Add a song first'); isPlaying() ? player.pauseVideo() : player.playVideo(); };
+$('skip').onclick = () => { if (!queue.length) return toast('Nothing in the queue'); nextRequestedFor = null; requestNext(curId()); };
+$('inviteBtn').onclick = async () => {
   const link = `${location.origin}/r/${encodeURIComponent(room)}`;
-  if (navigator.share) { try { await navigator.share({ title: 'Join my YT Music Jam', url: link }); return; } catch {} }
-  try { await navigator.clipboard.writeText(link); setStatus('Invite link copied!'); }
+  if (navigator.share) { try { await navigator.share({ title: 'Join my jam 🎧', url: link }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+  try { await navigator.clipboard.writeText(link); toast('Invite link copied'); }
   catch { prompt('Copy this invite link:', link); }
 };
 </script>

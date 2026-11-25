@@ -6,12 +6,14 @@ const path = require('path');
 const { WebSocketServer } = require('ws');
 
 const PORT = process.env.PORT || 8787;
+// Works whether jam.html sits in public/ or next to server.js
 const PAGE = fs.existsSync(path.join(__dirname, 'public', 'jam.html'))
   ? path.join(__dirname, 'public', 'jam.html')
   : path.join(__dirname, 'jam.html');
 
 const server = http.createServer((req, res) => {
-  const url = req.url.split('?')[0];
+  // Tolerate double/trailing slashes like "//r/room" or "/health/"
+  const url = req.url.split('?')[0].replace(/\/{2,}/g, '/').replace(/(.)\/$/, '$1');
   if (url === '/health') return res.end('ok');
   if (url === '/' || url.startsWith('/r/')) {
     res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
