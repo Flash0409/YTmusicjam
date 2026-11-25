@@ -6,7 +6,9 @@ const path = require('path');
 const { WebSocketServer } = require('ws');
 
 const PORT = process.env.PORT || 8787;
-const PAGE = path.join(__dirname, 'public', 'jam.html');
+const PAGE = fs.existsSync(path.join(__dirname, 'public', 'jam.html'))
+  ? path.join(__dirname, 'public', 'jam.html')
+  : path.join(__dirname, 'jam.html');
 
 const server = http.createServer((req, res) => {
   const url = req.url.split('?')[0];
